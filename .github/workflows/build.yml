@@ -1,0 +1,31 @@
+name: Build ffusion binaries
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            asset_name: ffusion-windows-x86_64.exe
+            build_name: ffusion.exe
+          - os: ubuntu-latest
+            asset_name: ffusion-linux-x86_64
+            build_name: ffusion
+          - os: macos-latest
+            asset_name: ffusion-macos-arm64
+            build_name: ffusion
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: target/release/${{ matrix.build_name }}
